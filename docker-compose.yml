@@ -33,7 +33,7 @@ services:
     external_links:
       - sorokinandrey:traveller_storage
     ports:
-      - 8080:8080
+      - 8081:8081
     environment:
       spring.data.mongodb.host: mongo
       spring.data.mongodb.port: 27017
@@ -49,6 +49,8 @@ services:
     image: "sorokinandrey/traveller_importer:0.0.1"
     external_links:
       - sorokinandrey:traveller_importer
+    ports:
+      - 8082:8082
     environment:
       spring.rabbitmq.host: rabbitmq
       spring.rabbitmq.port: 5672
