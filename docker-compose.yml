@@ -1,0 +1,58 @@
+version: '3'
+
+networks:
+  backend-tier:
+    external:
+      name: backend-tier
+
+services:
+  mongo:
+    container_name: "mongo"
+    image: "mongo"
+    external_links:
+      - mongo:5.0.8
+    ports:
+      - "27017:27017"
+    networks:
+      - backend-tier
+
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: "rabbitmq"
+    external_links:
+      - rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - backend-tier
+
+  traveller_storage:
+    image: "sorokinandrey/traveller_storage:0.0.1"
+    external_links:
+      - sorokinandrey:traveller_storage
+    ports:
+      - "8080:8080"
+    environment:
+      spring.data.mongodb.host: mongo
+      spring.data.mongodb.port: 27017
+      spring.rabbitmq.host: rabbitmq
+      spring.rabbitmq.port: 5672
+    networks:
+      - backend-tier
+    depends_on:
+      - mongo
+      - rabbitmq
+
+  traveller_importer:
+    image: "sorokinandrey/traveller_importer:0.0.1"
+    external_links:
+      - sorokinandrey:traveller_importer
+    environment:
+      spring.rabbitmq.host: rabbitmq
+      spring.rabbitmq.port: 5672
+    networks:
+      - backend-tier
+    depends_on:
+      - rabbitmq
+      - traveller_storage
