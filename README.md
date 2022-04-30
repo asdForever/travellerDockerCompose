@@ -28,3 +28,7 @@ To run the project you have to install docker and docker-compose:
 
 Run application:
 * docker-compose up --build
+
+Usefull command list:
+* docker rmi -f $(docker images -a -q) # remove all local docker images
+* docker ps -aq | xargs docker rm # remove all local docker containers

@@ -2,22 +2,22 @@ version: "3.3"
 
 networks:
   backend-tier:
-    external:
-      name: backend-tier
+    driver: bridge
 
 services:
   mongo:
-    container_name: "mongo"
+    container_name: "traveller_mongo"
     image: "mongo"
     external_links:
       - mongo:5.0.8
     ports:
       - 27017:27017
+    restart: on-failure
     networks:
       - backend-tier
 
   rabbitmq:
-    container_name: "rabbitmq"
+    container_name: "traveller_rabbitmq"
     image: rabbitmq:3-management-alpine
     ports:
       - 5672:5672    #amqp
@@ -25,20 +25,22 @@ services:
     # volumes:
     #   - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
     #   - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    restart: on-failure
     networks:
       - backend-tier
 
   traveller_storage:
-    image: "sorokinandrey/traveller_storage:0.0.1"
+    image: "sorokinandrey/traveller_storage:latest"
     external_links:
       - sorokinandrey:traveller_storage
     ports:
       - 8081:8081
     environment:
-      spring.data.mongodb.host: mongo
+      spring.data.mongodb.host: traveller_mongo
       spring.data.mongodb.port: 27017
-      spring.rabbitmq.host: rabbitmq
+      spring.rabbitmq.host: traveller_rabbitmq
       spring.rabbitmq.port: 5672
+    restart: on-failure
     networks:
       - backend-tier
     depends_on:
@@ -46,14 +48,15 @@ services:
       - rabbitmq
 
   traveller_importer:
-    image: "sorokinandrey/traveller_importer:0.0.1"
+    image: "sorokinandrey/traveller_importer:latest"
     external_links:
       - sorokinandrey:traveller_importer
     ports:
       - 8082:8082
     environment:
-      spring.rabbitmq.host: rabbitmq
+      spring.rabbitmq.host: traveller_rabbitmq
       spring.rabbitmq.port: 5672
+    restart: on-failure
     networks:
       - backend-tier
     depends_on:
